@@ -65,3 +65,6 @@ class FileStorage:
             FileStorage.__objects.pop(key, None)
         else:
             pass
+
+    def close(self):
+        self.reload()
