@@ -26,7 +26,6 @@ class State(BaseModel, Base):
         @property
         def cities(self):
             """return a list of city instances with state_id = current"""
-        if os.getenv("HBNB_TYPE_STORAGE") != "db":
             all_instances = models.storage.all(City)
             query = []
             for key, value in all_instances.items():
