@@ -10,20 +10,25 @@ import models
 
 class State(BaseModel, Base):
     """ State class """
-    __tablename__ = 'states'
-
-    name = Column(String(128), nullable=False)
-
     if os.getenv("HBNB_TYPE_STORAGE") == "db":
-        cities = relationship("City", cascade="all, delete", backref="state")
+        __tablename__ = 'states'
+        name = Column(String(128), nullable=False)
+        cities = relationship("City", backref="state",
+                              cascade="all, delete, delete-orphan")
 
     else:
+        name = ""
+        
+        def __init__(self, *args, **kwargs):
+            """initializes state"""
+            super().__init__(*args, **kwargs)
+
         @property
         def cities(self):
-            "return the list of instances from City"
-            from models import storage
-            list_cities = []
-            for k in models.storage.all('City').values():
-                if k.state_id == self.id:
-                    list_cities.append(k)
-            return list_cities
+            """return a list of city instances with state_id = current"""
+            all_instances = models.storage.all(City)
+            query = []
+            for key, value in all_instances.items():
+                if getattr(value, 'state_id') == self.id:
+                    query.append(value)
+                    return query
