@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
-from json import dumps, loads
-from os.path import exists
+import models
 
 
 class FileStorage:
@@ -12,14 +11,16 @@ class FileStorage:
 
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
-        dic = {}
-        if cls:
-            for key, value in FileStorage.__objects.items():
-                if value.__class__ == cls:
-                    dic[key] = value
-            return dic
-        return FileStorage.__objects
-
+        if cls is None:
+            return FileStorage.__objects
+        else:
+            new_dict = {}
+            for key, obj in FileStorage.__objects.items():
+                name = key.split('.')
+                if name[0] == cls.__name__:
+                    new_dict[key] = obj
+            return new_dict
+        
     def new(self, obj):
         """Adds new object to storage dictionary"""
         self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
@@ -58,10 +59,13 @@ class FileStorage:
             pass
 
     def delete(self, obj=None):
-        """delete obj from __objects"""
-        if obj:
-            key = "{}.{}".format(type(obj).__name__, obj.id)
-            del self.__objects[key]
-
+        """Deletes an object from Storage"""
+        if obj is not None:
+            key = "{}.{}".format(obj.__class__.__name__, obj.id)
+            FileStorage.__objects.pop(key, None)
+        else:
+            pass
+        
     def close(self):
+        """Close the current session and reload data from the JSON file"""
         self.reload()
